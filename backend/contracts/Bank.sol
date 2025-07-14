@@ -14,6 +14,7 @@ contract Bank {
     // Cannot be accessed directly from outside the contract.
     // Can only be accessed by functions inside the same contract.
     // balances - This is the name of the mapping.
+    // its a mapping
     mapping(address => uint) private balances;
 
     event Deposited(address indexed user, uint amount, uint256 timestamp);
