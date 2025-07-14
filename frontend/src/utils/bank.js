@@ -18,7 +18,7 @@ export async function getBankContract() {
 
   return contractInstance;
 }
-
+// can be in hook
 function setupEventListeners(contract) {
   // ✅ This is the correct way to reference events in Ethers v6
   // "Look inside this contract’s ABI and find the event called Withdrawn."

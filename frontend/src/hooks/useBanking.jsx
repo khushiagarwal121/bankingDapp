@@ -1,4 +1,4 @@
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { getMyBalance, depositEther, withdrawEther } from "../utils/bank";
 import { parseEther } from "ethers";
@@ -7,7 +7,7 @@ export function useBanking() {
   const [balance, setBalance] = useState("0");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [transactions, setTransactions] = useState([]);
   useEffect(() => {
     if (window.ethereum) connectWallet();
   }, []);
@@ -33,6 +33,7 @@ export function useBanking() {
     // isNaN() stands for "is Not a Number".
     return !isNaN(parsed) && parsed > 0;
   };
+
   const handleDeposit = async () => {
     if (!isValidAmount(amount)) {
       // alert("please enter a valid amount greater than 0");
@@ -46,10 +47,21 @@ export function useBanking() {
       const bal = await getMyBalance();
       setBalance(bal);
       setAmount("");
+      // Record this transaction
+      setTransactions((prev) => [
+        {
+          type: "Deposit",
+          amount,
+          hash: tx.hash,
+          timestamp: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
       const etherscanUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
       toast.success(
         <span>
-          Deposit successful<br/>
+          Deposit successful
+          <br />
           <a
             href={etherscanUrl}
             target="_blank"
@@ -81,13 +93,18 @@ export function useBanking() {
       const tx = await withdrawEther(amount);
       const etherscanUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
       const bal = await getMyBalance(); // in ETH (string)
-      console.log("💳 Wallet balance (ETH):", bal);
-      console.log("💸 Amount to withdraw (ETH):", amount);
-      console.log("💡 Raw balance in Wei:", parseEther(bal));
-      console.log("💡 Raw amount to withdraw in Wei:", parseEther(amount));
 
       setBalance(bal);
       setAmount("");
+      setTransactions((prev) => [
+        {
+          type: "Withdraw",
+          amount,
+          hash: tx.hash,
+          timestamp: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
       toast.success(
         <span>
           Withdrawal successfull
@@ -119,5 +136,6 @@ export function useBanking() {
     disconnectWallet,
     handleDeposit,
     handleWithdraw,
+    transactions,
   };
 }

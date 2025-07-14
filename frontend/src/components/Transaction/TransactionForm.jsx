@@ -19,7 +19,7 @@ function TransactionForm({
         onChange={(e) => setAmount(e.target.value)}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 py-2">
         <button
           onClick={handleDeposit}
           disabled={isLoading}
