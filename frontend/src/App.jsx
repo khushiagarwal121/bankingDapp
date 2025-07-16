@@ -4,6 +4,7 @@ import Header from "./components/Header/Header";
 import TransactionForm from "./components/Transaction/TransactionForm";
 import WalletInfo from "./components/Wallet/WalletInfo";
 import TransactionHistory from "./components/Transaction/TransactionHistory";
+import { formatTime } from "./utils/format";
 
 function App() {
   const {
@@ -17,6 +18,7 @@ function App() {
     handleDeposit,
     handleWithdraw,
     transactions,
+    timeLeft,
   } = useBanking();
 
   return (
@@ -35,13 +37,20 @@ function App() {
 
           <WalletInfo wallet={wallet} balance={balance} />
           <TransactionForm
+            wallet={wallet}
             amount={amount}
             setAmount={setAmount}
             handleDeposit={handleDeposit}
             handleWithdraw={handleWithdraw}
             isLoading={isLoading}
           />
-
+          {wallet && timeLeft !== null && (
+            <p className="mt-4 text-center text-sm text-gray-700">
+              {timeLeft === 0
+                ? "tyou can withdraw now"
+                : `withdraw available in :${formatTime(timeLeft)}`}
+            </p>
+          )}
           {isLoading && (
             <p className="mt-4 text-center text-blue-600 font-medium">
               ⏳ Processing transaction...

@@ -16,7 +16,7 @@ contract Bank {
     // balances - This is the name of the mapping.
     // its a mapping
     mapping(address => uint) private balances;
-
+    mapping(address => uint256) private depositTimeStamps;
     event Deposited(address indexed user, uint amount, uint256 timestamp);
     event Withdrawn(address indexed user, uint amount, uint256 timestamp);
 
@@ -24,11 +24,19 @@ contract Bank {
     // payable → It can receive ETH when it’s called.
     function deposit() public payable {
         balances[msg.sender] += msg.value;
-        emit Deposited(msg.sender, msg.value, block.timestamp); 
+        // Set timestamp only on first deposit (or first after withdrawal)
+        if (depositTimeStamps[msg.sender] == 0) {
+            depositTimeStamps[msg.sender] = block.timestamp;
+        }
+        emit Deposited(msg.sender, msg.value, block.timestamp);
     }
     // to let users take out ETH from their balance.
 
     function withdraw(uint amount) public {
+        require(
+            block.timestamp >= depositTimeStamps[msg.sender] + 1 days,
+            "Withdrawals allowed after one day"
+        );
         // This line checks if the sender (the person calling the function) has enough ETH stored in the contract.
         // msg.sender is a built-in global variable.
         // It stores the address of the caller of the function (usually an EOA like MetaMask or another contract).
@@ -48,5 +56,14 @@ contract Bank {
     //  view → It only reads, doesn’t change anything
     function getBalance() public view returns (uint) {
         return balances[msg.sender];
+    }
+    // since view so doesnt change blockchain state
+
+    function timeUntilWithdraw() public view returns (uint256){
+        uint256 unlockTime = depositTimeStamps[msg.sender] + 1 days;
+        if (block.timestamp > unlockTime) {
+            return 0;
+        }
+        return unlockTime - block.timestamp;
     }
 }

@@ -8,7 +8,7 @@ function Header({ wallet, onConnect, onDisconnect }) {
         </span>
         Banking DApp
       </h1>
-      <div>{wallet?(<button onClick={onDisconnect}>Disconnect</button>):(<button onClick={onConnect} className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-md hover:bg-gray transition">Connect</button>)}</div>
+      <div>{wallet?(<button onClick={onDisconnect} className="bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-md hover:bg-red-200 transition">Disconnect</button>):(<button onClick={onConnect} className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-md hover:bg-gray transition">Connect</button>)}</div>
     </header>
   );
 }

@@ -1,16 +1,32 @@
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
-import { getMyBalance, depositEther, withdrawEther } from "../utils/bank";
+import {
+  getMyBalance,
+  depositEther,
+  withdrawEther,
+  getTimeUntilWithdraw,
+} from "../utils/bank";
 import { parseEther } from "ethers";
+import { formatTime } from "../utils/format";
 export function useBanking() {
   const [wallet, setWallet] = useState(null);
   const [balance, setBalance] = useState("0");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(null);
   useEffect(() => {
     if (window.ethereum) connectWallet();
   }, []);
+
+  useEffect(() => {
+    async function fetchTimeLeft() {
+      if (!wallet) return;
+      const seconds = await getTimeUntilWithdraw();
+      setTimeLeft(seconds);
+    }
+    fetchTimeLeft();
+  }, [wallet, transactions]);
 
   const connectWallet = async () => {
     const [addr] = await window.ethereum.request({
@@ -87,6 +103,12 @@ export function useBanking() {
       toast.error("please enter a valid amount greater than 0");
       return;
     }
+
+    const timeLeft = await getTimeUntilWithdraw();
+    if (timeLeft > 0) {
+      toast.error(`you can withdraw in ${formatTime(timeLeft)}`);
+      return;
+    }
     setIsLoading(true);
     const toastId = toast.loading("processing withdrawal..");
     try {
@@ -137,5 +159,6 @@ export function useBanking() {
     handleDeposit,
     handleWithdraw,
     transactions,
+    timeLeft,
   };
 }

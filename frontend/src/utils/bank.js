@@ -1,7 +1,7 @@
 import { BrowserProvider, Contract, parseEther, formatEther } from "ethers";
 import BankABI from "./BankABI.json";
 
-const CONTRACT_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+const CONTRACT_ADDRESS = "0x9e64b526aD1bA4371CE7f099F2f9A4279304960E";
 // Reuse across all functions
 let contractInstance = null;
 export async function getBankContract() {
@@ -14,6 +14,7 @@ export async function getBankContract() {
 
   const signer = await provider.getSigner();
   contractInstance = new Contract(CONTRACT_ADDRESS, BankABI.abi, signer);
+
   setupEventListeners(contractInstance);
 
   return contractInstance;
@@ -33,19 +34,33 @@ function setupEventListeners(contract) {
 export async function depositEther(amountInEth) {
   const contract = await getBankContract();
   console.log("contract returned ", contract);
-  // We are calling the deposit() function of your deployed Bank smart contract, and we’re sending ETH along with the function call.
-  //   value: ... is a special key in Ethers.js that says:
-  // "Along with calling this function, send this amount of ETH.
 
-  const tx = await contract.deposit({
-    value: parseEther(amountInEth),
-  });
-  await tx.wait(); //tx mined here
-  return tx; // ✅ return transaction
+  try {
+    const valueInWei = parseEther(amountInEth);
+    console.log("Parsed amount:", valueInWei);
+
+    const tx = await contract.deposit({
+      value: valueInWei,
+    });
+
+    console.log("Tx sent. Waiting...");
+    await tx.wait();
+    console.log("✅ Transaction successful:", tx.hash);
+
+    return tx;
+  } catch (err) {
+    console.error("❌ Deposit failed");
+    console.error("Message:", err.message);
+    console.error("Code:", err.code);
+    console.error("Reason:", err.reason);
+    console.error("Stack:", err.stack);
+    throw err; // rethrow to see in UI
+  }
 }
 
 export async function withdrawEther(amountInEth) {
   const contract = await getBankContract();
+  console.log("amoutn", amountInEth);
   const tx = await contract.withdraw(parseEther(amountInEth));
   // const receipt = await tx.wait(); // this is the mined receipt
   // return receipt; // ✅ return this if needed
@@ -58,9 +73,16 @@ export async function getMyBalance() {
   // Returns the balance in wei
   const balance = await contract.getBalance();
   console.log("📊 Raw Wei balance:", balance); // BigInt
-  console.log("💰 Formatted ETH:", formatEther(balance));
+  // console.log("💰 Formatted ETH:", formatEther(balance));
 
-  console.log("balance", balance, formatEther(balance));
+  // console.log("balance", balance, formatEther(balance));
   // formatEther() is an Ethers.js utility function that converts wei → human-readable ETH string
   return formatEther(balance);
+}
+
+export async function getTimeUntilWithdraw() {
+  const contract = await getBankContract();
+  // get result in big int
+  const secondsLeft = await contract.timeUntilWithdraw();
+  return Number(secondsLeft);
 }

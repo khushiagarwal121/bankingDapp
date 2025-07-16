@@ -1,10 +1,12 @@
 function TransactionForm({
+  wallet,
   amount,
   setAmount,
   handleDeposit,
   handleWithdraw,
   isLoading,
 }) {
+  const isDisabled=!wallet || isLoading;
   return (
     <>
       {/* onChange - It triggers every time the user types or changes the input field. */}
@@ -22,14 +24,14 @@ function TransactionForm({
       <div className="flex flex-col sm:flex-row gap-3 py-2">
         <button
           onClick={handleDeposit}
-          disabled={isLoading}
+          disabled={isDisabled}
           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition disabled:opacity-50"
         >
           Deposit
         </button>
         <button
           onClick={handleWithdraw}
-          disabled={isLoading}
+          disabled={isDisabled}
           className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition disabled:opacity-50"
         >
           Withdraw
