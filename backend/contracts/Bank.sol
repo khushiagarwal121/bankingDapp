@@ -1,8 +1,16 @@
 // This specific contract is meant to act like a digital wallet or vault where users can deposit, check, and later withdraw Ether (ETH).
 // SPDX-License-Identifier: UNLICENSED
 // The ^ symbol means "up to the next major version", so it's compatible with any 0.8.x.
+
 pragma solidity ^0.8.28;
-contract Bank {
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+// we inherit from ReentrancyGuard
+// This means the Bank contract is inheriting from the ReentrancyGuard contract provided by OpenZeppelin.
+
+// So now, our Bank contract has access to everything in ReentrancyGuard, especially the:
+
+// modifier nonReentrant
+contract Bank is ReentrancyGuard {
     // private means: is not directly visible to users or other contracts — only the functions in this contract can see it.
     // 🔸 address => uint
     // The key is an Ethereum wallet address (like 0x123...).
@@ -31,8 +39,9 @@ contract Bank {
         emit Deposited(msg.sender, msg.value, block.timestamp);
     }
     // to let users take out ETH from their balance.
-
-    function withdraw(uint amount) public {
+// As soon as withdraw is called, the nonReentrant modifier blocks any reentrant calls.
+// Even if the attacker tries to call back into withdraw in the same transaction, it fails.
+    function withdraw(uint amount) public nonReentrant {
         require(
             block.timestamp >= depositTimeStamps[msg.sender] + 1 days,
             "Withdrawals allowed after one day"
@@ -59,7 +68,7 @@ contract Bank {
     }
     // since view so doesnt change blockchain state
 
-    function timeUntilWithdraw() public view returns (uint256){
+    function timeUntilWithdraw() public view returns (uint256) {
         uint256 unlockTime = depositTimeStamps[msg.sender] + 1 days;
         if (block.timestamp > unlockTime) {
             return 0;
