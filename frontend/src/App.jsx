@@ -17,7 +17,6 @@ function App() {
     disconnectWallet,
     handleDeposit,
     handleWithdraw,
-    transactions,
     timeLeft,
   } = useBanking();
 
@@ -56,7 +55,6 @@ function App() {
               ⏳ Processing transaction...
             </p>
           )}
-          <TransactionHistory transactions={transactions} />
         </div>
       </div>
     </>

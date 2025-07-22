@@ -1,19 +1,26 @@
 import { toast } from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   getMyBalance,
   depositEther,
   withdrawEther,
   getTimeUntilWithdraw,
 } from "../utils/bank";
-import { parseEther } from "ethers";
 import { formatTime } from "../utils/format";
+import { BankingContext } from "../context/BankingContext";
 export function useBanking() {
-  const [wallet, setWallet] = useState(null);
-  const [balance, setBalance] = useState("0");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [transactions, setTransactions] = useState([]);
+
+  // 🔥 Use global context
+  const {
+    wallet,
+    setWallet,
+    balance,
+    setBalance,
+    transactions,
+    setTransactions,
+  } = useContext(BankingContext);
   const [timeLeft, setTimeLeft] = useState(null);
   useEffect(() => {
     if (window.ethereum) connectWallet();
@@ -27,6 +34,27 @@ export function useBanking() {
     }
     fetchTimeLeft();
   }, [wallet, transactions]);
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) {
+      return;
+    }
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // When only 1 second or less is left, it:
+
+          // Stops the timer using clearInterval,
+
+          // Returns 0 to finish the countdown.
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
 
   const connectWallet = async () => {
     const [addr] = await window.ethereum.request({
@@ -96,9 +124,6 @@ export function useBanking() {
   };
 
   const handleWithdraw = async () => {
-    console.log("💡 Withdraw amount:", amount);
-    console.log("✅ Withdraw in Wei:", parseEther(amount));
-
     if (!isValidAmount(amount)) {
       toast.error("please enter a valid amount greater than 0");
       return;

@@ -1,7 +1,7 @@
 import { BrowserProvider, Contract, parseEther, formatEther } from "ethers";
 import BankABI from "./BankABI.json";
 
-const CONTRACT_ADDRESS = "0x9e64b526aD1bA4371CE7f099F2f9A4279304960E";
+const CONTRACT_ADDRESS = "0xc68d5A96171A9B2cBFBFFD00F290ccCaE8c99De5";
 // Reuse across all functions
 let contractInstance = null;
 export async function getBankContract() {
